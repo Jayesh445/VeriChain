@@ -29,3 +29,11 @@ dev = [
     "isort>=6.0.1",
     "pytest>=8.4.2",
 ]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools]
+packages = ["app", "logs"]
