@@ -62,6 +62,7 @@ WORKER_TIMEOUT=300
 ### 3. Database Setup
 
 #### PostgreSQL Setup
+
 ```bash
 # Install PostgreSQL
 sudo apt update
@@ -76,6 +77,7 @@ GRANT ALL PRIVILEGES ON DATABASE verichain TO verichain_user;
 ```
 
 #### Database Initialization
+
 ```bash
 # Run database migrations (when available)
 uv run python -c "
@@ -111,6 +113,7 @@ WantedBy=multi-user.target
 ```
 
 Enable and start the service:
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable verichain
@@ -126,7 +129,7 @@ Create `/etc/nginx/sites-available/verichain`:
 server {
     listen 80;
     server_name your-api-domain.com;
-    
+
     # Redirect HTTP to HTTPS
     return 301 https://$server_name$request_uri;
 }
@@ -134,7 +137,7 @@ server {
 server {
     listen 443 ssl http2;
     server_name your-api-domain.com;
-    
+
     # SSL Configuration
     ssl_certificate /path/to/your/ssl/cert.pem;
     ssl_certificate_key /path/to/your/ssl/private.key;
@@ -142,13 +145,13 @@ server {
     ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
     ssl_prefer_server_ciphers off;
     ssl_dhparam /path/to/dhparam.pem;
-    
+
     # Security Headers
     add_header X-Frame-Options DENY;
     add_header X-Content-Type-Options nosniff;
     add_header X-XSS-Protection "1; mode=block";
     add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
-    
+
     # API Proxy
     location / {
         proxy_pass http://127.0.0.1:8000;
@@ -156,25 +159,25 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # WebSocket support
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        
+
         # Timeouts
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
     }
-    
+
     # Static files (if any)
     location /static/ {
         alias /path/to/your/static/files/;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
-    
+
     # Health check endpoint (bypass proxy for faster response)
     location /health {
         proxy_pass http://127.0.0.1:8000/health;
@@ -184,6 +187,7 @@ server {
 ```
 
 Enable the site:
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/verichain /etc/nginx/sites-enabled/
 sudo nginx -t
@@ -207,7 +211,9 @@ sudo crontab -e
 ### 7. Monitoring and Logging
 
 #### Log Configuration
+
 Update your `.env` for structured logging:
+
 ```bash
 LOG_LEVEL=INFO
 LOG_FORMAT=json
@@ -215,6 +221,7 @@ LOG_FILE=/var/log/verichain/app.log
 ```
 
 #### System Monitoring
+
 ```bash
 # Install monitoring tools
 sudo apt install htop iotop
@@ -232,6 +239,7 @@ sudo -u postgres psql -c "SELECT * FROM pg_stat_activity WHERE datname='verichai
 ### 8. Backup Strategy
 
 #### Database Backup
+
 ```bash
 #!/bin/bash
 # backup_database.sh
@@ -254,6 +262,7 @@ echo "Backup completed: $BACKUP_FILE.gz"
 ```
 
 #### Application Backup
+
 ```bash
 #!/bin/bash
 # backup_application.sh
@@ -273,6 +282,7 @@ echo "Application backup completed"
 ```
 
 #### Automated Backups
+
 ```bash
 # Add to crontab
 sudo crontab -e
@@ -287,6 +297,7 @@ sudo crontab -e
 ### 9. Performance Optimization
 
 #### Database Optimization
+
 ```sql
 -- PostgreSQL optimizations
 -- Add indexes for frequently queried columns
@@ -301,6 +312,7 @@ ANALYZE agent_decisions;
 ```
 
 #### Application Optimization
+
 ```bash
 # In production .env
 WORKERS=4  # Adjust based on CPU cores
@@ -326,6 +338,7 @@ KEEPALIVE=2
 ### 11. Deployment Script
 
 Create `deploy.sh`:
+
 ```bash
 #!/bin/bash
 set -e
@@ -369,6 +382,7 @@ echo "✅ Deployment completed successfully"
 ### 12. Rollback Procedure
 
 Create `rollback.sh`:
+
 ```bash
 #!/bin/bash
 set -e
@@ -404,6 +418,7 @@ echo "✅ Rollback completed"
 ### 13. Health Checks and Monitoring
 
 #### Application Health Check
+
 ```bash
 #!/bin/bash
 # health_check.sh
@@ -419,13 +434,13 @@ if [ $response -eq 200 ]; then
     exit 0
 else
     echo "❌ API health check failed (HTTP $response)"
-    
+
     # Check service status
     systemctl is-active verichain
-    
+
     # Show recent logs
     journalctl -u verichain -n 20 --no-pager
-    
+
     exit 1
 fi
 ```
@@ -435,6 +450,7 @@ fi
 #### Common Issues and Solutions
 
 **Service won't start:**
+
 ```bash
 # Check logs
 sudo journalctl -u verichain -n 50
@@ -448,6 +464,7 @@ uv run python main.py
 ```
 
 **Database connection issues:**
+
 ```bash
 # Test database connection
 psql -U verichain_user -h localhost -d verichain -c "SELECT 1;"
@@ -457,6 +474,7 @@ sudo systemctl status postgresql
 ```
 
 **High memory usage:**
+
 ```bash
 # Monitor memory usage
 htop
@@ -466,6 +484,7 @@ sudo systemctl edit verichain
 ```
 
 **SSL certificate issues:**
+
 ```bash
 # Check certificate expiry
 sudo certbot certificates
