@@ -14,7 +14,7 @@ def setup_logging():
     
     # Remove default logger
     logger.remove()
-    
+    print("Setting up logging...")
     # Console logging
     logger.add(
         sys.stdout,

@@ -25,8 +25,10 @@ class GeminiClient:
     Async client for Google Gemini API with robust error handling and retry logic.
     """
     
-    def __init__(self, api_key: str, config: Optional[AgentConfig] = None):
-        self.api_key = api_key
+    def __init__(self, api_key: Optional[str] = None, config: Optional[AgentConfig] = None):
+        self.api_key = api_key or settings.effective_api_key
+        if not self.api_key:
+            raise GeminiAPIError("No API key provided. Set GEMINI_API_KEY or GOOGLE_API_KEY in environment.")
         self.config = config or AgentConfig()
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models"
         

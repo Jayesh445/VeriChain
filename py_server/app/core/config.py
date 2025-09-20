@@ -3,9 +3,10 @@ Configuration management for VeriChain application.
 """
 
 import os
-from typing import Optional, List
+from typing import Optional, List, Union
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,13 +26,15 @@ class Settings(BaseSettings):
     debug: bool = False
     host: str = "0.0.0.0"
     port: int = 8000
+    environment: str = "development"
     
     # Google Gemini Configuration
-    google_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
+    google_api_key: Optional[str] = None  # Alternative field name
     gemini_model: str = "gemini-1.5-flash"
     
     # Database Configuration
-    database_url: str = "sqlite:///./verichain.db"
+    database_url: str = "sqlite+aiosqlite:///./verichain.db"
     
     # Logging Configuration
     log_level: str = "INFO"
@@ -47,24 +50,52 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     
-    # CORS Configuration
-    allowed_origins: List[str] = ["http://localhost:3000", "http://localhost:3001"]
-    allowed_methods: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allowed_headers: List[str] = ["*"]
+    # CORS Configuration - Handle as strings and convert to lists
+    allowed_origins: Union[str, List[str]] = "http://localhost:3000,http://127.0.0.1:3000"
+    allowed_methods: Union[str, List[str]] = "GET,POST,PUT,DELETE,OPTIONS"
+    allowed_headers: Union[str, List[str]] = "*"
+    
+    @field_validator('allowed_origins', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v):
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(',') if origin.strip()]
+        return v
+    
+    @field_validator('allowed_methods', mode='before')
+    @classmethod
+    def parse_cors_methods(cls, v):
+        if isinstance(v, str):
+            return [method.strip() for method in v.split(',') if method.strip()]
+        return v
+    
+    @field_validator('allowed_headers', mode='before')
+    @classmethod
+    def parse_cors_headers(cls, v):
+        if isinstance(v, str):
+            if v == "*":
+                return ["*"]
+            return [header.strip() for header in v.split(',') if header.strip()]
+        return v
     
     # Rate Limiting
     rate_limit_requests: int = 100
     rate_limit_window: int = 60  # seconds
     
     @property
+    def effective_api_key(self) -> Optional[str]:
+        """Get the effective API key (prioritize gemini_api_key over google_api_key)."""
+        return self.gemini_api_key or self.google_api_key
+    
+    @property
     def is_development(self) -> bool:
         """Check if running in development mode."""
-        return self.debug
+        return self.debug or self.environment.lower() == "development"
     
     @property
     def is_production(self) -> bool:
         """Check if running in production mode."""
-        return not self.debug
+        return not self.is_development
     
     def get_database_url(self) -> str:
         """Get database URL with proper formatting."""
@@ -77,8 +108,8 @@ class Settings(BaseSettings):
         """Validate required settings and return missing ones."""
         missing = []
         
-        if not self.google_api_key:
-            missing.append("GOOGLE_API_KEY")
+        if not self.effective_api_key:
+            missing.append("GEMINI_API_KEY or GOOGLE_API_KEY")
         
         if not self.secret_key or self.secret_key == "your-secret-key-change-in-production":
             if self.is_production:
