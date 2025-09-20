@@ -28,15 +28,11 @@ def check_environment():
     """Check environment setup and requirements."""
     issues = []
     
-    # Check Python version
-    if sys.version_info < (3, 11):
-        issues.append(f"Python 3.11+ required, found {sys.version}")
-    
-    # Check environment variables
-    required_env = ["GEMINI_API_KEY"]
-    missing_env = [var for var in required_env if not os.getenv(var)]
-    if missing_env:
-        issues.append(f"Missing environment variables: {', '.join(missing_env)}")
+    # Check Python version - allow 3.10+ for now
+    if sys.version_info < (3, 10):
+        issues.append(f"Python 3.10+ required, found {sys.version}")
+    elif sys.version_info < (3, 11):
+        print(f"   ⚠️  Python 3.11+ recommended, found {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
     
     # Check dependencies
     if not DEPENDENCIES_AVAILABLE:
@@ -148,12 +144,16 @@ async def run_system_checks():
             print(f"   ❌ AI Agent: Error - {str(e)}")
             return False
     
-    # Gemini API
-    api_key = os.getenv("GEMINI_API_KEY")
-    if api_key:
-        print("   ✅ Gemini API: Key configured")
-    else:
-        print("   ⚠️  Gemini API: No API key found (set GEMINI_API_KEY)")
+    # API Key check using settings
+    try:
+        from app.core.config import settings
+        if settings.effective_api_key:
+            print("   ✅ Gemini API: Key configured")
+        else:
+            print("   ⚠️  Gemini API: No API key found (set GEMINI_API_KEY)")
+    except Exception as e:
+        print(f"   ❌ Settings: Error loading - {str(e)}")
+        return False
     
     return True
 
