@@ -6,6 +6,7 @@ try:
     from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
     from contextlib import asynccontextmanager
+    from datetime import datetime
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
@@ -23,6 +24,7 @@ setup_logging()
 if FASTAPI_AVAILABLE:
     from app.api import agents, dashboard
     from app.services.notifications import notification_manager
+    from app.services.ai_service import initialize_ai_service
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -36,6 +38,14 @@ if FASTAPI_AVAILABLE:
             print(f"Warning: Missing required settings: {', '.join(missing)}")
             if settings.is_production:
                 raise ValueError(f"Required settings missing in production: {', '.join(missing)}")
+        
+        # Initialize AI service first
+        print("🤖 Initializing VeriChain AI Service...")
+        try:
+            await initialize_ai_service()
+            print("✅ AI Service initialized successfully")
+        except Exception as e:
+            print(f"⚠️ AI Service initialization failed: {e}")
         
         # Initialize database
         print("Initializing database connection...")
@@ -76,6 +86,30 @@ if FASTAPI_AVAILABLE:
     # Include routers
     app.include_router(agents.router)
     app.include_router(dashboard.router)
+    
+    # Include monitoring router
+    try:
+        from app.api import monitoring
+        app.include_router(monitoring.router)
+        print("✅ Stock Monitoring API enabled")
+    except Exception as e:
+        print(f"⚠️ Monitoring router not available: {e}")
+    
+    # Include orchestration router
+    try:
+        from app.api import orchestration
+        app.include_router(orchestration.router)
+        print("✅ Advanced Agent Orchestration enabled")
+    except Exception as e:
+        print(f"⚠️ Orchestration router not available: {e}")
+    
+    # Include negotiation router
+    try:
+        from app.api import negotiations
+        app.include_router(negotiations.router)
+        print("✅ Supplier Negotiation Chat System enabled")
+    except Exception as e:
+        print(f"⚠️ Negotiation router not available: {e}")
 
     @app.get("/")
     async def root():
