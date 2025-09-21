@@ -6,7 +6,7 @@ import uvicorn
 from app.core.database import get_db, init_db
 from app.core.config import settings
 from app.core.logging import setup_logging
-from app.api import agent, inventory, dashboard, monitoring, sales
+from app.api import agent, inventory, dashboard, monitoring, sales, ai_agent
 
 
 @asynccontextmanager
@@ -44,6 +44,7 @@ app.include_router(inventory.router, prefix="/api/inventory", tags=["Inventory"]
 app.include_router(sales.router, prefix="/api/sales", tags=["Sales"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
 app.include_router(monitoring.router, prefix="/api/monitoring", tags=["Monitoring"])
+app.include_router(ai_agent.router, prefix="/api/ai-agent", tags=["AI Agent"])
 
 
 @app.get("/")

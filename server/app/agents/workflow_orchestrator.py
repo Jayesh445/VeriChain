@@ -427,46 +427,51 @@ class AgentWorkflowOrchestrator:
             raise
     
     async def _create_reorder_action(self, db: AsyncSession, decision: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Create a reorder action"""
+        """Create a reorder action through AI agent negotiation"""
         try:
             item_id = decision.get("item_id")
             quantity = decision.get("recommended_quantity", 10)
             
-            # Find suitable vendor for this item
-            vendor_items = await VendorService.get_vendors_for_item(db, item_id)
-            if not vendor_items:
+            # Get item details
+            item = await InventoryService.get_item(db, item_id)
+            if not item:
                 return {
                     "type": "reorder_failed",
-                    "reason": "No vendors found for item",
+                    "reason": "Item not found",
                     "item_id": item_id
                 }
             
-            # Select best vendor (highest reliability)
-            best_vendor = max(vendor_items, key=lambda x: x.vendor.reliability_score)
+            # Start AI agent negotiation instead of direct order creation
+            from ..api.ai_agent import start_negotiation_background
             
-            # Create order
-            order_data = {
-                "vendor_id": best_vendor.vendor_id,
-                "items": [{
-                    "item_id": item_id,
-                    "quantity": quantity,
-                    "unit_price": best_vendor.unit_price
-                }],
-                "notes": f"Auto-generated order from AI agent (confidence: {decision.get('confidence', 0):.2f})",
-                "created_by": "ai_agent"
+            negotiation_data = {
+                "item_id": item_id,
+                "quantity_needed": quantity,
+                "urgency": "high" if decision.get("confidence", 0) > 0.8 else "medium",
+                "trigger_source": "auto_refill",
+                "auto_decision_data": decision
             }
             
-            order = await OrderService.create_order(db, order_data)
+            # Start background negotiation process
+            session_id = await start_negotiation_background(db, negotiation_data)
             
             return {
-                "type": "reorder_created",
-                "order_id": order.id,
-                "order_number": order.order_number,
+                "type": "negotiation_started", 
+                "session_id": session_id,
                 "item_id": item_id,
+                "item_name": item.name,
                 "quantity": quantity,
-                "vendor_id": best_vendor.vendor_id,
-                "total_amount": order.total_amount,
+                "trigger": "auto_refill",
+                "confidence": decision.get("confidence", 0),
                 "created_at": datetime.utcnow().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to create reorder action: {str(e)}")
+            return {
+                "type": "reorder_failed",
+                "reason": f"Error starting negotiation: {str(e)}",
+                "item_id": item_id
             }
             
         except Exception as e:

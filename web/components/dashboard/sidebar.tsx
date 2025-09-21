@@ -53,6 +53,7 @@ export function Sidebar({ userRole }: SidebarProps) {
   ]
 
   const adminNavItems = [
+    { icon: Activity, label: "Enhanced Dashboard", href: "/dashboard/enhanced", badge: "2" },
     { icon: LayoutDashboard, label: "SCM Dashboard", href: "/dashboard/scm", badge: null },
     { icon: DollarSign, label: "Finance Dashboard", href: "/dashboard/finance", badge: null },
     { icon: Package, label: "Inventory", href: "/dashboard/inventory", badge: "12" },

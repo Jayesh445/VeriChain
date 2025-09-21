@@ -291,6 +291,46 @@ export class VeriChainAPI {
         const response = await apiClient.patch(`/api/orders/${orderId}/status`, { status });
         return response.data;
     }
+
+    // AI Agent Operations
+    static async startNegotiation(data: {
+        item_id: number;
+        quantity_needed: number;
+        max_budget?: number;
+        urgency?: string;
+    }): Promise<any> {
+        const response = await apiClient.post('/api/ai-agent/start-negotiation', data);
+        return response.data;
+    }
+
+    static async getNegotiationStatus(sessionId: string): Promise<any> {
+        const response = await apiClient.get(`/api/ai-agent/negotiation-status/${sessionId}`);
+        return response.data;
+    }
+
+    static async getActiveNegotiations(): Promise<any> {
+        const response = await apiClient.get('/api/ai-agent/active-negotiations');
+        return response.data;
+    }
+
+    static async getPendingApprovals(): Promise<any> {
+        const response = await apiClient.get('/api/ai-agent/pending-approvals');
+        return response.data;
+    }
+
+    static async approveOrder(data: {
+        session_id: string;
+        approved: boolean;
+        user_notes?: string;
+    }): Promise<any> {
+        const response = await apiClient.post('/api/ai-agent/approve-order', data);
+        return response.data;
+    }
+
+    static async cancelNegotiation(sessionId: string): Promise<any> {
+        const response = await apiClient.delete(`/api/ai-agent/cancel-negotiation/${sessionId}`);
+        return response.data;
+    }
 }
 
 export default VeriChainAPI;
