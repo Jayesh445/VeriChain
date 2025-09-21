@@ -1,22 +1,25 @@
 import datetime
 from typing import List, Dict
 
-# Example mapping of trends to products
+# Example mapping of trends to products (using common SKUs that might exist)
 TREND_PRODUCT_MAP = {
     'festival': [
-        {'name': 'Project Book', 'sku': 'PB-001'},
-        {'name': 'Sketch Pen Set', 'sku': 'SP-010'},
-        {'name': 'Color Paper Pack', 'sku': 'CP-005'}
+        {'name': 'A3 Paper', 'sku': 'STK-003'},
+        {'name': 'Ballpoint Pen Black', 'sku': 'STK-001'},
+        {'name': 'Sketch Pen Set', 'sku': 'STK-005'},
+        {'name': 'Color Paper Pack', 'sku': 'STK-004'}
     ],
     'school_start': [
-        {'name': 'Notebook', 'sku': 'NB-001'},
-        {'name': 'Ballpoint Pen Blue', 'sku': 'BP-002'},
-        {'name': 'Pencil Box', 'sku': 'PBX-003'}
+        {'name': 'A4 Paper', 'sku': 'STK-002'},
+        {'name': 'Ballpoint Pen Blue', 'sku': 'STK-006'},
+        {'name': 'Pencil Box', 'sku': 'STK-007'},
+        {'name': 'Notebook', 'sku': 'STK-008'}
     ],
     'exam': [
-        {'name': 'Exam Pad', 'sku': 'EP-004'},
-        {'name': 'HB Pencil', 'sku': 'HBP-007'},
-        {'name': 'Eraser', 'sku': 'ER-008'}
+        {'name': 'A4 Paper', 'sku': 'STK-002'},
+        {'name': 'Ballpoint Pen Black', 'sku': 'STK-001'},
+        {'name': 'HB Pencil', 'sku': 'STK-009'},
+        {'name': 'Eraser', 'sku': 'STK-010'}
     ]
 }
 
@@ -24,8 +27,9 @@ TREND_PRODUCT_MAP = {
 TREND_CALENDAR = [
     {'name': 'school_start', 'start': (6, 1), 'end': (6, 30)},  # June
     {'name': 'exam', 'start': (3, 1), 'end': (3, 31)},         # March
-    {'name': 'exam', 'start': (10, 1), 'end': (10, 31)},       # October
-    {'name': 'festival', 'start': (8, 1), 'end': (10, 31)},    # Aug-Oct
+    {'name': 'exam', 'start': (10, 1), 'end': (10, 31)},       # October  
+    {'name': 'festival', 'start': (8, 1), 'end': (11, 30)},    # Aug-Nov (extended for current date)
+    {'name': 'festival', 'start': (9, 15), 'end': (9, 30)},    # Late September festivals
 ]
 
 def get_current_trends(today=None) -> List[str]:

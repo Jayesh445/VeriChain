@@ -83,20 +83,38 @@ export default function InventoryManagement() {
     // Handler for auto-order from AI suggestions
     const handleAutoOrder = async (suggestion: any) => {
         try {
-            // You can customize this logic to open a dialog or directly trigger negotiation
+            // First, get all inventory items to find the suggested item
+            const allItems = await VeriChainAPI.getInventoryItems();
+            const foundItem = allItems.find((item: any) => item.sku === suggestion.sku || item.name === suggestion.product);
+
+            if (!foundItem) {
+                toast({
+                    title: "Item Not Found",
+                    description: `Could not find ${suggestion.product} in inventory`,
+                    variant: "destructive"
+                });
+                return;
+            }
+
+            // Calculate recommended quantity (fill to max stock or default to 100)
+            const recommendedQuantity = foundItem.max_stock_level ?
+                Math.max(foundItem.max_stock_level - foundItem.current_stock, 50) : 100;
+
             await VeriChainAPI.startNegotiation({
-                item_id: inventoryItems.find(i => i.sku === suggestion.sku)?.id,
-                quantity_needed: 100, // Default or recommended quantity
+                item_id: foundItem.id,
+                quantity_needed: recommendedQuantity,
                 urgency: "medium"
             });
+
             toast({
                 title: "Auto Order Triggered",
-                description: `Started negotiation for ${suggestion.product}`,
+                description: `Started AI negotiation for ${suggestion.product} (Qty: ${recommendedQuantity})`,
             });
-        } catch (e) {
+        } catch (e: any) {
+            console.error('Auto order error:', e);
             toast({
                 title: "Error",
-                description: `Failed to auto order ${suggestion.product}`,
+                description: `Failed to auto order ${suggestion.product}: ${e.message || 'Unknown error'}`,
                 variant: "destructive"
             });
         }
@@ -136,7 +154,7 @@ export default function InventoryManagement() {
             filtered = filtered.filter(item =>
                 item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.description.toLowerCase().includes(searchTerm.toLowerCase())
+                (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()))
             );
         }
 
