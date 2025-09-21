@@ -17,13 +17,17 @@ import {
   Shield,
   Bell,
   LogOut,
+  Brain,
+  DollarSign,
+  TrendingUp,
+  Activity,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 interface SidebarProps {
-  userRole: "scm" | "finance"
+  userRole?: "scm" | "finance" | "admin" | "inventory" | "ai-agent" | "vendor"
 }
 
 export function Sidebar({ userRole }: SidebarProps) {
@@ -31,23 +35,45 @@ export function Sidebar({ userRole }: SidebarProps) {
   const pathname = usePathname()
 
   const scmNavItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/scm", badge: null },
-    { icon: Package, label: "Inventory", href: "/dashboard/scm/inventory", badge: "12" },
-    { icon: FileText, label: "Orders", href: "/dashboard/scm/orders", badge: "3" },
-    { icon: Users, label: "Vendors", href: "/dashboard/scm/vendors", badge: null },
-    { icon: BarChart3, label: "Reports", href: "/dashboard/scm/reports", badge: null },
-    { icon: Bell, label: "Alerts", href: "/dashboard/scm/alerts", badge: "5" },
+    { icon: LayoutDashboard, label: "SCM Dashboard", href: "/dashboard/scm", badge: null },
+    { icon: Package, label: "Inventory", href: "/dashboard/inventory", badge: "12" },
+    { icon: Users, label: "Vendors", href: "/dashboard/vendors", badge: null },
+    { icon: Brain, label: "AI Agent", href: "/dashboard/ai-agent", badge: "3" },
+    { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics", badge: null },
+    { icon: Bell, label: "Alerts", href: "/dashboard/alerts", badge: "5" },
   ]
 
   const financeNavItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/finance", badge: null },
-    { icon: FileText, label: "Reports", href: "/dashboard/finance/reports", badge: null },
-    { icon: Shield, label: "Audit Trail", href: "/dashboard/finance/audit", badge: "2" },
-    { icon: BarChart3, label: "Analytics", href: "/dashboard/finance/analytics", badge: null },
-    { icon: Bell, label: "Compliance", href: "/dashboard/finance/compliance", badge: "1" },
+    { icon: DollarSign, label: "Finance Dashboard", href: "/dashboard/finance", badge: null },
+    { icon: Package, label: "Inventory", href: "/dashboard/inventory", badge: "12" },
+    { icon: Users, label: "Vendors", href: "/dashboard/vendors", badge: null },
+    { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics", badge: null },
+    { icon: Shield, label: "Audit Trail", href: "/dashboard/audit", badge: "2" },
+    { icon: Bell, label: "Compliance", href: "/dashboard/compliance", badge: "1" },
   ]
 
-  const navItems = userRole === "scm" ? scmNavItems : financeNavItems
+  const adminNavItems = [
+    { icon: LayoutDashboard, label: "SCM Dashboard", href: "/dashboard/scm", badge: null },
+    { icon: DollarSign, label: "Finance Dashboard", href: "/dashboard/finance", badge: null },
+    { icon: Package, label: "Inventory", href: "/dashboard/inventory", badge: "12" },
+    { icon: Users, label: "Vendors", href: "/dashboard/vendors", badge: null },
+    { icon: Brain, label: "AI Agent", href: "/dashboard/ai-agent", badge: "3" },
+    { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics", badge: null },
+  ]
+
+  const getNavItems = () => {
+    switch (userRole) {
+      case "scm":
+        return scmNavItems
+      case "finance":
+        return financeNavItems
+      case "admin":
+      default:
+        return adminNavItems
+    }
+  }
+
+  const navItems = getNavItems()
 
   return (
     <div

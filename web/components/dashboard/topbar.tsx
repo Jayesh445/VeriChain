@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationSystem } from "@/components/notifications";
 import {
   Bell,
   Search,
@@ -25,38 +26,13 @@ import {
 } from "lucide-react";
 
 interface TopbarProps {
-  userRole: "scm" | "finance";
+  userRole?: "scm" | "finance" | "admin" | "inventory" | "ai-agent" | "vendor";
   userName: string;
   userEmail: string;
 }
 
 export function Topbar({ userRole, userName, userEmail }: TopbarProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [notifications] = useState([
-    {
-      id: 1,
-      title: "Low stock alert",
-      message: "Product XYZ is running low",
-      time: "2m ago",
-      unread: true,
-    },
-    {
-      id: 2,
-      title: "Order completed",
-      message: "Order #1234 has been fulfilled",
-      time: "1h ago",
-      unread: true,
-    },
-    {
-      id: 3,
-      title: "Vendor update",
-      message: "New pricing from Supplier ABC",
-      time: "3h ago",
-      unread: false,
-    },
-  ]);
-
-  const unreadCount = notifications.filter((n) => n.unread).length;
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
@@ -68,7 +44,9 @@ export function Topbar({ userRole, userName, userEmail }: TopbarProps) {
   };
 
   const roleDisplayName =
-    userRole === "scm" ? "Supply Chain Manager" : "Finance Officer";
+    userRole === "scm" ? "Supply Chain Manager" :
+      userRole === "finance" ? "Finance Officer" :
+        userRole === "admin" ? "Administrator" : "User";
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-background border-b border-border">
@@ -111,47 +89,7 @@ export function Topbar({ userRole, userName, userEmail }: TopbarProps) {
         </Button>
 
         {/* Notifications */}
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button variant="ghost" size="sm" className="w-9 h-9 p-0 relative">
-              <Bell className="w-4 h-4" />
-              {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 w-5 h-5 text-xs p-0 flex items-center justify-center">
-                  {unreadCount}
-                </Badge>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className="flex flex-col items-start p-4"
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span className="font-medium text-sm">
-                    {notification.title}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {notification.time}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {notification.message}
-                </p>
-                {notification.unread && (
-                  <div className="w-2 h-2 bg-primary rounded-full mt-2" />
-                )}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-center">
-              View all notifications
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <NotificationSystem />
 
         {/* User Menu */}
         <DropdownMenu>
