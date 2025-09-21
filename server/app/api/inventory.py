@@ -302,7 +302,7 @@ async def update_item_stock(
     request: StockUpdateRequest,
     db: AsyncSession = Depends(get_db)
 ):
-    """Update stock level for an item"""
+    """Update stock level for an item and trigger AI negotiation if needed"""
     try:
         # Get the item first
         result = await db.execute(select(StationeryItem).where(StationeryItem.id == item_id))
@@ -315,6 +315,7 @@ async def update_item_stock(
             )
         
         # Update the stock
+        old_stock = item.current_stock
         new_stock = item.current_stock + request.quantity
         if new_stock < 0:
             raise HTTPException(
@@ -336,14 +337,62 @@ async def update_item_stock(
         # Refresh the item to get updated values
         await db.refresh(item)
         
-        return {
+        # Check if stock reduction triggered reorder condition and auto-start negotiation
+        negotiation_triggered = False
+        if (request.quantity < 0 and  # Stock was reduced
+            new_stock <= item.reorder_level and  # Below reorder level
+            old_stock > item.reorder_level):  # Previously above reorder level
+            
+            try:
+                # Import here to avoid circular dependency
+                from app.api.ai_agent import start_negotiation_background
+                
+                # Calculate recommended quantity (bring back to max level)
+                recommended_quantity = max(item.max_stock_level - new_stock, item.reorder_level)
+                
+                # Start AI negotiation process
+                negotiation_data = {
+                    "item_id": item_id,
+                    "quantity_needed": recommended_quantity,
+                    "urgency": "high" if new_stock == 0 else "medium",
+                    "trigger_source": "stock_reduction",
+                    "reduction_context": {
+                        "old_stock": old_stock,
+                        "new_stock": new_stock,
+                        "reduction_amount": abs(request.quantity),
+                        "reason": request.reason,
+                        "updated_by": request.updated_by
+                    }
+                }
+                
+                session_id = await start_negotiation_background(db, negotiation_data)
+                negotiation_triggered = True
+                
+                logger.info(f"Auto-started negotiation {session_id} for item {item_id} due to stock reduction")
+                
+            except Exception as e:
+                logger.error(f"Failed to start auto-negotiation: {str(e)}")
+                # Don't fail the stock update if negotiation fails
+        
+        response = {
             "success": True,
             "message": f"Stock updated by {request.quantity} units",
             "item_id": item_id,
+            "old_stock_level": old_stock,
             "new_stock_level": new_stock,
             "reason": request.reason,
             "updated_at": datetime.utcnow().isoformat()
         }
+        
+        # Add negotiation info if triggered
+        if negotiation_triggered:
+            response["auto_negotiation"] = {
+                "triggered": True,
+                "session_id": session_id,
+                "message": f"AI negotiation started automatically for {item.name} due to low stock"
+            }
+        
+        return response
         
     except HTTPException:
         raise

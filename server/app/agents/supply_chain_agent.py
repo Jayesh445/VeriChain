@@ -7,7 +7,7 @@ from langchain.tools import BaseTool
 from langchain.schema import BaseMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
-from langchain.memory import ConversationBufferMemory
+# Remove deprecated ConversationBufferMemory
 
 from app.core.config import settings
 from app.core.logging import logger
@@ -22,10 +22,8 @@ class SupplyChainAgent:
             temperature=settings.agent_temperature,
             google_api_key=settings.gemini_api_key
         )
-        self.memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True
-        )
+        # Replace deprecated memory with simple conversation tracking
+        self.conversation_history = []
         
     async def analyze_inventory_situation(
         self, 
