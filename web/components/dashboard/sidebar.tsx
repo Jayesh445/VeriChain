@@ -36,29 +36,29 @@ export function Sidebar({ userRole }: SidebarProps) {
 
   const scmNavItems = [
     { icon: LayoutDashboard, label: "SCM Dashboard", href: "/dashboard/scm", badge: null },
-    { icon: Package, label: "Inventory", href: "/dashboard/inventory", badge: "12" },
+    { icon: Package, label: "Inventory", href: "/dashboard/inventory", badge: null },
     { icon: Users, label: "Vendors", href: "/dashboard/vendors", badge: null },
-    { icon: Brain, label: "AI Agent", href: "/dashboard/ai-agent", badge: "3" },
+    { icon: Brain, label: "AI Agent", href: "/dashboard/ai-agent", badge: null },
     { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics", badge: null },
-    { icon: Bell, label: "Alerts", href: "/dashboard/alerts", badge: "5" },
+    { icon: Bell, label: "Alerts", href: "/dashboard/alerts", badge: null },
   ]
 
   const financeNavItems = [
     { icon: DollarSign, label: "Finance Dashboard", href: "/dashboard/finance", badge: null },
-    { icon: Package, label: "Inventory", href: "/dashboard/inventory", badge: "12" },
+    { icon: Package, label: "Inventory", href: "/dashboard/inventory", badge: null },
     { icon: Users, label: "Vendors", href: "/dashboard/vendors", badge: null },
     { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics", badge: null },
-    { icon: Shield, label: "Audit Trail", href: "/dashboard/audit", badge: "2" },
-    { icon: Bell, label: "Compliance", href: "/dashboard/compliance", badge: "1" },
+    { icon: Shield, label: "Audit Trail", href: "/dashboard/audit", badge: null },
+    { icon: Bell, label: "Compliance", href: "/dashboard/compliance", badge: null },
   ]
 
   const adminNavItems = [
-    { icon: Activity, label: "Enhanced Dashboard", href: "/dashboard/enhanced", badge: "2" },
+    { icon: Activity, label: "Enhanced Dashboard", href: "/dashboard/enhanced", badge: null },
     { icon: LayoutDashboard, label: "SCM Dashboard", href: "/dashboard/scm", badge: null },
     { icon: DollarSign, label: "Finance Dashboard", href: "/dashboard/finance", badge: null },
-    { icon: Package, label: "Inventory", href: "/dashboard/inventory", badge: "12" },
+    { icon: Package, label: "Inventory", href: "/dashboard/inventory", badge: null },
     { icon: Users, label: "Vendors", href: "/dashboard/vendors", badge: null },
-    { icon: Brain, label: "AI Agent", href: "/dashboard/ai-agent", badge: "3" },
+    { icon: Brain, label: "AI Agent", href: "/dashboard/ai-agent", badge: null },
     { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics", badge: null },
   ]
 
