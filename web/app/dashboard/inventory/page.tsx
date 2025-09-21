@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import VeriChainAPI, { InventoryItem } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import AISuggestions from "@/components/AISuggestions";
 
 const CATEGORIES = [
     "WRITING_INSTRUMENTS",
@@ -78,6 +79,28 @@ export default function InventoryManagement() {
     const [reduceQuantity, setReduceQuantity] = useState(1);
 
     const { toast } = useToast();
+
+    // Handler for auto-order from AI suggestions
+    const handleAutoOrder = async (suggestion: any) => {
+        try {
+            // You can customize this logic to open a dialog or directly trigger negotiation
+            await VeriChainAPI.startNegotiation({
+                item_id: inventoryItems.find(i => i.sku === suggestion.sku)?.id,
+                quantity_needed: 100, // Default or recommended quantity
+                urgency: "medium"
+            });
+            toast({
+                title: "Auto Order Triggered",
+                description: `Started negotiation for ${suggestion.product}`,
+            });
+        } catch (e) {
+            toast({
+                title: "Error",
+                description: `Failed to auto order ${suggestion.product}`,
+                variant: "destructive"
+            });
+        }
+    };
 
     const fetchInventoryData = async () => {
         try {
@@ -298,6 +321,7 @@ export default function InventoryManagement() {
 
     return (
         <div className="space-y-6">
+            <AISuggestions onAutoOrder={handleAutoOrder} />
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>

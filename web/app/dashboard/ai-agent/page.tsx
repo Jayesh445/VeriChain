@@ -82,8 +82,7 @@ export default function AIAgentDashboard() {
     useEffect(() => {
         fetchData();
         fetchInventoryItems();
-        const interval = setInterval(fetchData, 5000); // Refresh every 5 seconds
-        return () => clearInterval(interval);
+        // No automatic polling - only refresh on manual action
     }, []);
 
     const fetchInventoryItems = async () => {
@@ -95,14 +94,11 @@ export default function AIAgentDashboard() {
         }
     };
 
-    useEffect(() => {
-        fetchData();
-        const interval = setInterval(fetchData, 5000); // Refresh every 5 seconds
-        return () => clearInterval(interval);
-    }, []);
-
-    const fetchData = async () => {
+    const fetchData = async (isManualRefresh = false) => {
         try {
+            if (isManualRefresh) {
+                setRefreshing(true);
+            }
             const [activeData, pendingData] = await Promise.all([
                 VeriChainAPI.getActiveNegotiations(),
                 VeriChainAPI.getPendingApprovals()
@@ -309,7 +305,7 @@ export default function AIAgentDashboard() {
                     )}
 
                     <Button
-                        onClick={fetchData}
+                        onClick={() => fetchData(true)}
                         disabled={refreshing}
                         variant="outline"
                     >
@@ -545,8 +541,8 @@ export default function AIAgentDashboard() {
                                                                                         >
                                                                                             <div
                                                                                                 className={`max-w-[70%] p-3 rounded-lg ${message.speaker === 'AI Agent'
-                                                                                                        ? 'bg-blue-500 text-white'
-                                                                                                        : 'bg-white border'
+                                                                                                    ? 'bg-blue-500 text-white'
+                                                                                                    : 'bg-white border'
                                                                                                     }`}
                                                                                             >
                                                                                                 <div className="flex items-center justify-between mb-1">
@@ -791,8 +787,8 @@ export default function AIAgentDashboard() {
                                                                         >
                                                                             <div
                                                                                 className={`max-w-[70%] p-3 rounded-lg ${message.speaker === 'AI Agent'
-                                                                                        ? 'bg-blue-500 text-white'
-                                                                                        : 'bg-white border'
+                                                                                    ? 'bg-blue-500 text-white'
+                                                                                    : 'bg-white border'
                                                                                     }`}
                                                                             >
                                                                                 <div className="flex items-center justify-between mb-1">
@@ -853,8 +849,8 @@ export default function AIAgentDashboard() {
                                                                         <div
                                                                             key={proposal.vendor_id}
                                                                             className={`p-3 rounded border ${session.best_proposal?.vendor_id === proposal.vendor_id
-                                                                                    ? 'border-green-300 bg-green-50'
-                                                                                    : 'border-gray-200'
+                                                                                ? 'border-green-300 bg-green-50'
+                                                                                : 'border-gray-200'
                                                                                 }`}
                                                                         >
                                                                             <div className="flex justify-between items-start">

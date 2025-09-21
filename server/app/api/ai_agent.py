@@ -17,6 +17,7 @@ from app.models import StationeryItem, Vendor, Order, AgentDecision, VendorStatu
 from app.agents.supply_chain_agent import SupplyChainAgent
 from app.core.logging import logger
 from pydantic import BaseModel
+from app.services.trend_analysis import get_trend_suggestions
 
 router = APIRouter()
 
@@ -162,6 +163,12 @@ class QuickActionRequest(BaseModel):
     session_id: str
     action: str  # price_match, expedite, bulk_discount, accept_terms
     message: str
+
+class TrendSuggestion(BaseModel):
+    trend: str
+    product: str
+    sku: str
+    reason: str
 
 @router.post("/start-negotiation")
 async def start_negotiation(
@@ -1144,3 +1151,8 @@ def _calculate_progress(status: str) -> int:
         "error": 100
     }
     return progress_map.get(status, 0)
+
+@router.get("/ai-suggestions", response_model=List[TrendSuggestion])
+async def get_ai_suggestions():
+    """Get AI product suggestions based on current trends (festivals, school start, exams, etc.)"""
+    return get_trend_suggestions()

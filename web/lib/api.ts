@@ -125,6 +125,13 @@ export interface DashboardData {
     overview?: any;
 }
 
+export interface TrendSuggestion {
+    trend: string;
+    product: string;
+    sku: string;
+    reason: string;
+}
+
 // API Service Class
 export class VeriChainAPI {
     // Health Check
@@ -348,6 +355,11 @@ export class VeriChainAPI {
 
     static async triggerLowStockNegotiations(): Promise<any> {
         const response = await apiClient.post('/api/ai-agent/trigger-low-stock-negotiations');
+        return response.data;
+    }
+
+    static async getAISuggestions(): Promise<TrendSuggestion[]> {
+        const response = await apiClient.get('/api/ai-agent/ai-suggestions');
         return response.data;
     }
 }

@@ -8,8 +8,8 @@ from solcx import compile_source, install_solc, set_solc_version
 # Configuration (Amoy Testnet)
 # ----------------------------
 INFURA_URL = "https://polygon-amoy.infura.io/v3/1307fe2d730d4f98982eb391c1f9afb3"
-ACCOUNT = "0x9ABd635A15f9aFA256b83bD06CC59FeFC15e1Af1"  # your wallet
-PRIVATE_KEY = "0xd9ea795152216526ae1d27be0ab3157a07f5e813ba684b21327a4deb5c0b4bbe"  # ⚠️ keep safe!
+ACCOUNT = "dfg"  # your wallet
+PRIVATE_KEY = "vbnm"  # ⚠️ keep safe!
 
 # ----------------------------
 # Web3 setup
@@ -74,7 +74,7 @@ tx = contract.constructor().build_transaction({
     'from': ACCOUNT,
     'nonce': nonce,
     'gas': 2000000,  # deployment gas
-    'gasPrice': w3.to_wei('35', 'gwei')  # updated to 35 gwei for faster confirmation
+    'gasPrice': w3.to_wei('30', 'gwei')  # updated to 35 gwei for faster confirmation
 })
 signed_tx = w3.eth.account.sign_transaction(tx, PRIVATE_KEY)
 tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
