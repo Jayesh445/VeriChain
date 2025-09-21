@@ -327,8 +327,27 @@ export class VeriChainAPI {
         return response.data;
     }
 
+    static async sendQuickAction(data: {
+        session_id: string;
+        action: string;
+        message: string;
+    }): Promise<any> {
+        const response = await apiClient.post('/api/ai-agent/quick-action', data);
+        return response.data;
+    }
+
     static async cancelNegotiation(sessionId: string): Promise<any> {
         const response = await apiClient.delete(`/api/ai-agent/cancel-negotiation/${sessionId}`);
+        return response.data;
+    }
+
+    static async getNotifications(): Promise<any> {
+        const response = await apiClient.get('/api/ai-agent/notifications');
+        return response.data;
+    }
+
+    static async triggerLowStockNegotiations(): Promise<any> {
+        const response = await apiClient.post('/api/ai-agent/trigger-low-stock-negotiations');
         return response.data;
     }
 }

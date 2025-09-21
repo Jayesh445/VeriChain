@@ -164,16 +164,82 @@ export default function InventoryManagement() {
         if (!reduceStockItem) return;
 
         try {
-            const newQuantity = Math.max(0, reduceStockItem.current_stock - reduceQuantity);
-            await VeriChainAPI.updateStock(reduceStockItem.id, {
-                quantity: newQuantity,
-                reason: `Stock reduction for testing - reduced by ${reduceQuantity}`,
+            const response = await VeriChainAPI.updateStock(reduceStockItem.id, {
+                quantity: -reduceQuantity, // Use negative quantity for reduction
+                reason: `Manual stock reduction - reduced by ${reduceQuantity}`,
                 updated_by: "admin"
             });
-            toast({
-                title: "Success",
-                description: `Stock reduced by ${reduceQuantity} units`,
-            });
+
+            let successMessage = `Stock reduced by ${reduceQuantity} units`;
+
+            // Check if auto-negotiation was triggered
+            if (response.auto_negotiation?.triggered) {
+                successMessage += `. AI negotiation started automatically!`;
+
+                toast({
+                    title: "🤖 AI Agent Activated!",
+                    description: (
+                        <div className="space-y-2">
+                            <p>{response.auto_negotiation.message}</p>
+                            {response.auto_negotiation.session_id && (
+                                <div className="bg-blue-50 p-2 rounded text-sm">
+                                    <p className="font-medium text-blue-800">Session Details:</p>
+                                    <p className="text-blue-600">
+                                        ID: {response.auto_negotiation.session_id?.slice(0, 8)}...
+                                    </p>
+                                    <a
+                                        href="/dashboard/ai-agent"
+                                        className="text-blue-700 underline hover:text-blue-900"
+                                        onClick={() => {
+                                            // Close the current dialog and navigate
+                                            setTimeout(() => window.location.href = '/dashboard/ai-agent', 100);
+                                        }}
+                                    >
+                                        → View Live Negotiation
+                                    </a>
+                                </div>
+                            )}
+                            <p className="text-xs text-gray-500">
+                                Gemini AI is now negotiating with ALL active vendors in real-time
+                            </p>
+                        </div>
+                    ),
+                    duration: 10000,
+                });
+
+                // Show additional notification for low stock scenarios
+                if (reduceStockItem.current_stock - reduceQuantity <= reduceStockItem.reorder_level) {
+                    setTimeout(() => {
+                        toast({
+                            title: "📊 Critical Stock Level Alert",
+                            description: (
+                                <div className="space-y-2">
+                                    <p className="font-medium text-orange-800">
+                                        {reduceStockItem.name} is now below reorder level!
+                                    </p>
+                                    <div className="bg-orange-50 p-2 rounded text-sm">
+                                        <p>Current Stock: {reduceStockItem.current_stock - reduceQuantity}</p>
+                                        <p>Reorder Level: {reduceStockItem.reorder_level}</p>
+                                        <p className="text-orange-600 font-medium mt-1">
+                                            🤖 AI Agent is automatically negotiating with vendors
+                                        </p>
+                                    </div>
+                                    <p className="text-xs text-gray-600">
+                                        You'll receive an approval request once the best vendor is selected
+                                    </p>
+                                </div>
+                            ),
+                            duration: 8000,
+                        });
+                    }, 3000);
+                }
+            } else {
+                toast({
+                    title: "Success",
+                    description: successMessage,
+                });
+            }
+
             setIsReduceStockOpen(false);
             setReduceStockItem(null);
             setReduceQuantity(1);
@@ -579,16 +645,17 @@ export default function InventoryManagement() {
             <Dialog open={isReduceStockOpen} onOpenChange={setIsReduceStockOpen}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Reduce Stock (Testing)</DialogTitle>
+                        <DialogTitle>Reduce Stock & Test AI Agent</DialogTitle>
                         <DialogDescription>
-                            Reduce stock for {reduceStockItem?.name} to test reorder functionality
+                            Reduce stock for {reduceStockItem?.name} to trigger AI negotiation workflow
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         <Alert>
                             <AlertTriangle className="h-4 w-4" />
                             <AlertDescription>
-                                This will reduce stock levels to test automatic reorder triggers and AI agent responses.
+                                <strong>AI Agent Testing:</strong> If stock goes below reorder level ({reduceStockItem?.reorder_level}),
+                                AI agent will automatically start negotiating with vendors. You'll be notified when approval is needed.
                             </AlertDescription>
                         </Alert>
                         <div>

@@ -56,72 +56,18 @@ export default function NotificationCenter({ onNotificationUpdate }: Notificatio
 
     const fetchNotifications = async () => {
         try {
-            // Mock notifications since we don't have the backend endpoint yet
-            const mockNotifications: Notification[] = [
-                {
-                    id: '1',
-                    type: 'approval_request',
-                    title: 'Order Approval Required',
-                    message: 'AI agent found the best deal for Ballpoint Pens (Qty: 500) from Staples Inc. for $1,250.00. Approval needed to proceed.',
-                    metadata: {
-                        session_id: 'sess_123',
-                        item_name: 'Ballpoint Pens',
-                        vendor_name: 'Staples Inc.',
-                        total_cost: 1250.00,
-                        delivery_time: 3
-                    },
-                    created_at: new Date().toISOString(),
-                    read: false,
-                    requires_action: true
-                },
-                {
-                    id: '2',
-                    type: 'negotiation_complete',
-                    title: 'Negotiation Completed',
-                    message: 'Successfully negotiated with 3 vendors for Office Paper. Best price: $89.99 from Office Depot.',
-                    metadata: {
-                        session_id: 'sess_124',
-                        item_name: 'Office Paper',
-                        vendor_count: 3,
-                        best_price: 89.99
-                    },
-                    created_at: new Date(Date.now() - 300000).toISOString(),
-                    read: false,
-                    requires_action: true
-                },
-                {
-                    id: '3',
-                    type: 'order_update',
-                    title: 'Order Processed',
-                    message: 'Order #ORD-456 for Sticky Notes has been successfully placed with Quick Office Supply.',
-                    metadata: {
-                        order_id: 'ORD-456',
-                        vendor_name: 'Quick Office Supply',
-                        item_name: 'Sticky Notes'
-                    },
-                    created_at: new Date(Date.now() - 600000).toISOString(),
-                    read: true,
-                    requires_action: false
-                },
-                {
-                    id: '4',
-                    type: 'system_alert',
-                    title: 'Low Stock Alert',
-                    message: 'Printer Ink (Black) is running low. Current stock: 12 units. Reorder threshold: 15 units.',
-                    metadata: {
-                        item_name: 'Printer Ink (Black)',
-                        current_stock: 12,
-                        reorder_threshold: 15
-                    },
-                    created_at: new Date(Date.now() - 900000).toISOString(),
-                    read: false,
-                    requires_action: false
-                }
-            ];
+            setLoading(true);
+            const response = await VeriChainAPI.getNotifications();
 
-            setNotifications(mockNotifications);
+            if (response.success) {
+                setNotifications(response.notifications || []);
+            } else {
+                setNotifications([]);
+            }
         } catch (error) {
             console.error('Failed to fetch notifications:', error);
+            // Fallback to empty array if backend fails
+            setNotifications([]);
         } finally {
             setLoading(false);
         }
@@ -364,11 +310,15 @@ export default function NotificationCenter({ onNotificationUpdate }: Notificatio
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Total Cost:</span>
-                                        <span className="font-medium">${selectedNotification.metadata.total_cost.toFixed(2)}</span>
+                                        <span className="font-medium">
+                                            ${selectedNotification.metadata.total_cost?.toFixed(2) || 'N/A'}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Delivery:</span>
-                                        <span className="font-medium">{selectedNotification.metadata.delivery_time} days</span>
+                                        <span className="font-medium">
+                                            {selectedNotification.metadata.delivery_time || 'N/A'} days
+                                        </span>
                                     </div>
                                 </div>
                             </div>
