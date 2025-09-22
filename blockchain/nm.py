@@ -7,14 +7,16 @@ from solcx import compile_source, install_solc, set_solc_version
 # ----------------------------
 # Configuration (Amoy Testnet)
 # ----------------------------
-INFURA_URL = "https://polygon-amoy.infura.io/v3/1307fe2d730d4f98982eb391c1f9afb3"
-ACCOUNT = "0x9ABd635A15f9aFA256b83bD06CC59FeFC15e1Af1"  # your wallet
-PRIVATE_KEY = "0xd9ea795152216526ae1d27be0ab3157a07f5e813ba684b21327a4deb5c0b4bbe"  # ⚠️ keep safe!
+GANACHE_URL = "http://127.0.0.1:8545"
+w3 = Web3(Web3.HTTPProvider(GANACHE_URL))
 
-# ----------------------------
-# Web3 setup
-# ----------------------------
-w3 = Web3(Web3.HTTPProvider(INFURA_URL))
+# Pick account 0 from Ganache
+ACCOUNT     = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+PRIVATE_KEY = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
+
+# Always update nonce before sending tx
+
+
 if not w3.is_connected():
     raise Exception("Web3 connection failed")
 print("Connected to Polygon Amoy Testnet:", w3.is_connected())
@@ -73,9 +75,10 @@ nonce = w3.eth.get_transaction_count(ACCOUNT)
 tx = contract.constructor().build_transaction({
     'from': ACCOUNT,
     'nonce': nonce,
-    'gas': 2000000,  # deployment gas
-    'gasPrice': w3.to_wei('35', 'gwei')  # updated to 35 gwei for faster confirmation
+    'gas': 2_000_000,
+    'gasPrice': w3.to_wei('1', 'gwei')
 })
+
 signed_tx = w3.eth.account.sign_transaction(tx, PRIVATE_KEY)
 tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
 print("Deploying contract... Tx hash:", w3.to_hex(tx_hash))
