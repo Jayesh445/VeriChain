@@ -39,6 +39,12 @@ export default function LandingPage() {
 
             <div className="hidden md:flex items-center space-x-8">
               <a
+                href="/dashboard"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Dashboard
+              </a>
+              <a
                 href="#features"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
